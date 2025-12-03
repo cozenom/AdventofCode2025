@@ -29,10 +29,20 @@ for left, right in data:
 
 print("Part one: ")
 print(sum(res))
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Part 2
 
+res = []
+for left, right in data:
 
+    for i in range(left, right+1):
+        i = str(i)
+        for r in range(len(i)):
+            window = i[0:r]
+            if i.replace(window, "") == "":
+                res.append(int(i))
+                break
 
 print("Part two: ")
-print()
+print(sum(res))
