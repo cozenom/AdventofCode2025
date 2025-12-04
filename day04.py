@@ -1,14 +1,14 @@
 data = open("day04.txt").read().strip()
-data = """..@@.@@@@.
-@@@.@.@.@@
-@@@@@.@.@@
-@.@@@@..@.
-@@.@@@@.@@
-.@@@@@@@.@
-.@.@.@.@@@
-@.@@@.@@@@
-.@@@@@@@@.
-@.@.@@@.@."""
+# data = """..@@.@@@@.
+# @@@.@.@.@@
+# @@@@@.@.@@
+# @.@@@@..@.
+# @@.@@@@.@@
+# .@@@@@@@.@
+# .@.@.@.@@@
+# @.@@@.@@@@
+# .@@@@@@@@.
+# @.@.@@@.@."""
 
 data = [i for i in data.split('\n')]
 
@@ -55,10 +55,10 @@ for y in range(ylen):
 print(len(res))
 
 
-def draw(xlist, currentstate):
-    for x, y in xlist:
+def draw(removelist, currentstate):
+    for x, y in removelist:
         currentstate[y] = currentstate[y][:x] + 'x' + currentstate[y][x + 1:]
-    [print(i) for i in currentstate]
+    return currentstate
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -78,18 +78,65 @@ removed = 0
 step = 0
 current_state = data.copy()
 all_states = []
+all_states.append([f"Step 0"] + current_state.copy())
 while True:
-    all_states.append(current_state)
+    all_states.append([f"Step {step}"] + current_state.copy())
     changes = []
-    removed_start = removed
     for y in range(ylen):
         for x in range(xlen):
             if current_state[y][x] == '@':
                 if check_adjacent(x, y, current_state):
                     changes.append([x, y])
+
     current_state = update(changes, current_state)
     step += 1
     removed += len(changes)
-    if removed_start == removed: break
+    if not changes: break
+    all_states.append([f"Step {step}"] + draw(changes, current_state.copy()))
+
+all_states.append([f"Step {step}"] + current_state.copy())
 
 print(removed)
+
+# Vis - TAKES A WHILE WITH FULL INPUT
+
+from PIL import Image, ImageDraw, ImageFont
+
+def grid_to_image(grid, char_size=12, padding=10):
+    width, height = (len(grid[1]) * char_size) + (2 * padding) + char_size, (len(grid) * char_size) + (
+            2 * padding) + char_size
+    img = Image.new('RGB', (width, height), color='black')
+    draw = ImageDraw.Draw(img)
+
+    try:
+        font = ImageFont.truetype("JetBrainsMono-Regular.ttf", char_size)
+    except:
+        font = ImageFont.load_default()
+
+    y_pos = padding
+    for row in grid:
+        x_pos = padding
+        for char in row:
+            if char == '@':
+                draw.text((x_pos, y_pos), char, fill='green', font=font)
+            elif char == '.':
+                draw.text((x_pos, y_pos), char, fill='white', font=font)
+            elif char == 'x':
+                draw.text((x_pos, y_pos), char, fill='red', font=font)
+            else:
+                draw.text((x_pos, y_pos), char, fill='white', font=font)
+            x_pos += char_size
+        y_pos += char_size
+    return img
+
+
+def create_ascii_gif(frames, fname="day04.gif"):
+    pillow_frames = []
+    for frame in frames:
+        img = grid_to_image(frame)
+        pillow_frames.append(img)
+
+    pillow_frames.insert(-1, pillow_frames[-1])
+    pillow_frames[0].save(fname, save_all=True, append_images=pillow_frames[1:], duration=400, loop=1)
+
+create_ascii_gif(all_states)
