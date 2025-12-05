@@ -4,8 +4,7 @@ data = open("day05.txt").read().strip()
 data = [[j for j in i.split("\n")] for i in data.split('\n\n')]
 ranges = [[int(j) for j in i.split('-')] for i in data[0]]
 ingredients = [int(i) for i in data[1]]
-print(ranges)
-print(ingredients)
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Part 1
 print("Part one: ")
@@ -31,8 +30,5 @@ for i in range(1, len(ranges_sorted)):
     else:
         ranges_merged.append(curr)
 
-res = 0
-for low, high in ranges_merged:
-    res += high - low + 1
-
+res = sum(hi-lo+1 for (lo,hi) in ranges_merged)
 print(res)
