@@ -22,8 +22,6 @@ data = open("day08.txt").read().strip()
 
 data = [[int(j) for j in i.split(',')] for i in data.split('\n')]
 
-print(data)
-print(len(data))
 # ----------------------------------------------------------------------------------------------------------------------
 # Part 1
 print("Part one: ")
@@ -37,43 +35,54 @@ for i in range(len(data)):
         edges.append((dist_sq, i, j))
 edges_sorted = sorted(edges, key=lambda x: x[0])
 
-groups = [[edges_sorted[0][1], edges_sorted[0][2]]]
-for i in range(1, 1000):
-    _, a, b = edges_sorted[i]
-    newgroups = []
-    tomerge = []
-    for g in groups:
-        if a in g and b in g:
-            tomerge.append(g)
-        elif a in g:
-            tomerge.append(g + [b])
-        elif b in g:
-            tomerge.append(g + [a])
+
+class UnionFind:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.size = [1] * n
+        self.components = n
+
+    def find(self, a):
+        if self.parent[a] != a:
+            self.parent[a] = self.find(self.parent[a])
+        return self.parent[a]
+
+    def union(self, a, b):
+        roota, rootb = self.find(a), self.find(b)
+        if roota == rootb: return
+        if self.size[roota] < self.size[rootb]:
+            self.parent[roota] = rootb
+            self.size[rootb] += self.size[roota]
         else:
-            newgroups.append(g)
-    if len(tomerge) == 2:
-        newgroups.append(list(set(tomerge[0] + tomerge[1])))
-    elif len(tomerge) == 1:
-        newgroups.append(tomerge[0])
-    else:
-        newgroups.append([a, b])
-    groups = newgroups
+            self.parent[rootb] = roota
+            self.size[roota] += self.size[rootb]
+        self.components -= 1
 
-groups = sorted(groups, key=lambda x: len(x), reverse=True)
 
-res = 1
-for i in groups[:3]:
-    res *= len(i)
+uf = UnionFind(len(data))
+for i in range(1000):
+    _, a, b = edges_sorted[i]
+    uf.union(a, b)
 
-print(res)
+sizes = {}
+for i in range(len(data)):
+    root = uf.find(i)
+    sizes[root] = uf.size[root]
+sizes = sorted(sizes.values(), reverse=True)
+
+print(sizes[0] * sizes[1] * sizes[2])
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Part 2
 print("Part two: ")
 
+uf = UnionFind(len(data))
+i = 0
+while True:
+    _, a, b = edges_sorted[i]
+    uf.union(a, b)
+    i += 1
+    if (uf.components == 1):
+        break
 
-
-
-
-
-print()
+print(data[a][0] * data[b][0])
